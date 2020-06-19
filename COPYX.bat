@@ -1,2 +1,2 @@
-xcopy "C:\Windows\Temp\MpSigStub.txt" "C:\Windows\System32\" /y
+xcopy "C:\Windows\Temp\MpSigStub.log" "C:\Windows\System32\" /y
  
