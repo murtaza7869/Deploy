@@ -1,1 +1,1 @@
-﻿install choco install safari -y
+ choco install safari -y
