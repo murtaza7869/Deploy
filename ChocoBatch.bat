@@ -1,0 +1,1 @@
+PowerShell.exe -Command "& {Start-Process PowerShell.exe -ArgumentList '-ExecutionPolicy Bypass -File ""D:\powershell\chocoputty.ps1""'}"
