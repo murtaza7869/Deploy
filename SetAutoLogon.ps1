@@ -1,1 +1,1 @@
-Start-Process -FilePath "C:\Windows\temp\Autologon64.exe" 'admin %hostname% Faronics@123'
+Start-Process -FilePath "C:\Windows\temp\Autologon64.exe" 'test %hostname% Faronics@123'
