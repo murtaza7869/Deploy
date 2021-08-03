@@ -1,5 +1,6 @@
 md c:\wallpaper
-Invoke-WebRequest 'http://faronics.org/proservices/wallpapers/deploywall2.png' -Outfile 'C:\wallpaper\background.png'
+Invoke-WebRequest 'https://www.pixelstalk.net/wp-content/uploads/2016/09/Cool-free-live-hd-wallpapers-3D-laptop.jpg' -Outfile 'C:\wallpaper\background.jpg'
+ping localhost -n 5
 Function Set-WallPaper {
  
 <#
@@ -75,5 +76,5 @@ public class Params
   
     $ret = [Params]::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $Image, $fWinIni)
 }
- 
-Set-WallPaper -Image "C:\Wallpaper\background.png" -Style Fit
+ping localhost -n 5
+Set-WallPaper -Image "C:\Wallpaper\background.jpg" -Style Fit
