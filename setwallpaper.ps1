@@ -1,5 +1,5 @@
 md c:\wallpaper
-Invoke-WebRequest 'https://www.pixelstalk.net/wp-content/uploads/2016/09/Cool-free-live-hd-wallpapers-3D-laptop.jpg' -Outfile 'C:\wallpaper\background.jpg'
+Invoke-WebRequest 'https://github.com/murtaza7869/Deploy/raw/master/Einstein-branded-wallpaper3.png' -Outfile 'C:\wallpaper\background.png'
 ping localhost -n 5
 Function Set-WallPaper {
  
@@ -77,4 +77,4 @@ public class Params
     $ret = [Params]::SystemParametersInfo($SPI_SETDESKWALLPAPER, 0, $Image, $fWinIni)
 }
 ping localhost -n 5
-Set-WallPaper -Image "C:\Wallpaper\background.jpg" -Style Fit
+Set-WallPaper -Image "C:\Wallpaper\background.png" -Style Fit
