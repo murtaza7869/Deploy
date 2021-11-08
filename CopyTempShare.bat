@@ -1,2 +1,2 @@
-robocopy //DEPLOY_LEE/CustomScript/TempFolder/temp C:\
+robocopy //DEPLOY_LEE/CustomScript/TempFolder C:\ /E
 
