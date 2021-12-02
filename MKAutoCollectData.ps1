@@ -5,8 +5,8 @@ $DCTFolderPath = $outputDir + "FaronicsDataCollectionTools\"
 $AgentDataCollectorPath = $outputDir + "FaronicsDataCollectionTools\FaronicsAgentDataCollection.exe"
 $MaximumRuntimeSeconds = 5
 
-# $uploadUrl = "https://faronics.digitalpigeon.com/rcv/Send-files-to-Murtaza"
-# $uploadPath = "c:\Windows\Temp\Faronics\DCT\*.zip"
+$uploadUrl = "https://www.dropbox.com/request/Osl0qiXmEtmplyw3MNkq"
+$uploadPath = "c:\Windows\Temp\Faronics\DCT\*.zip"
 If (Test-Path $outputDir) {
     rm -r "$outputDir" | out-null
 }
@@ -31,7 +31,7 @@ catch
     $process | Stop-Process -Force
 }
 
-# Write-Warning -Message "Tool path is '$AgentDataCollectorPath'"
+Write-Warning -Message "Tool path is '$AgentDataCollectorPath'"
 
 Start-Process -FilePath "$AgentDataCollectorPath" -ArgumentList "/dbg:n" -WorkingDirectory "$DCTFolderPath" -Wait
 
@@ -40,4 +40,4 @@ $fileToUpload = $DCTFolderPath + $zipFileName
 
 Write-Warning -Message "Path of ZIP file to upload is '$fileToUpload'"
 
-# Invoke-RestMethod -Uri $uploadUrl -Method Post -InFile "$fileToUpload" -UseDefaultCredentials
+Invoke-RestMethod -Uri $uploadUrl -Method Post -InFile "$fileToUpload" -UseDefaultCredentials
