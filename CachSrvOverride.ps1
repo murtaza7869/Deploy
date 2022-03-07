@@ -16,4 +16,5 @@ Set-ItemProperty HKLM:\SOFTWARE\Faronics\CacheServerOverride -Name PortNo -Value
 ping localhost -n 5
 Start-Service -Name "FWUSvc"
 ping localhost -n 10
+return
 
