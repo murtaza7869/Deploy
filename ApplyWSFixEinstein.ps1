@@ -1,10 +1,25 @@
-Invoke-WebRequest 'https://github.com/murtaza7869/Deploy/raw/master/WSFix.zip' -Outfile 'C:\Windows\Temp\WSFix.zip'
-ping -n 5 127.0.0.1
-md 'C:\Program Files\Faronics\WINSelect\Temp'
-Expand-Archive -LiteralPath C:\Windows\Temp\WSFix.zip -DestinationPath 'C:\Program Files\Faronics\WINSelect\Temp\' -Force
-Rename-Item -Path "C:\Program Files\Faronics\WINSelect\Win32\WSProtector.dll" -NewName "org_WSProtector.dll" -Force
-Copy-Item -Path 'C:\Program Files\Faronics\WINSelect\Temp\WSFix\Win32\WSProtector.dll'-Destination 'C:\Program Files\Faronics\WINSelect\Win32\' -Force
-Rename-Item -Path "C:\Program Files\Faronics\WINSelect\WSProtector.dll" -NewName "org_WSProtector.dll" -Force
-Copy-Item -Path 'C:\Program Files\Faronics\WINSelect\Temp\WSFix\x64\WSProtector.dll' -Destination 'C:\Program Files\Faronics\WINSelect\' -Force
-ping -n 5 127.0.0.1
-Restart-Computer
+$cacheIP=$args[0]
+If (Test-Path -Path C:\Windows\temp\WUCoreCacheSrvFix.zip ){
+Remove-Item 'C:\Windows\temp\WUCoreCacheSrvFix.zip' -Recurse
+}
+Invoke-WebRequest 'https://faronics.digitalpigeon.com/msg/3ZRlkJ44EeydrQa5ZeB_WQ/1ksikRfRJq28xVU9KAd9FA/file/ddb3d470-9e38-11ec-a2cc-02d7d55f1e7d/download# - WUCoreCacheSrvFix - Override Cache server with reg key - WUCoreCacheSrvFix.zip' -OutFile 'C:\Windows\temp\WUCoreCacheSrvFix.zip'
+If (Test-Path -Path C:\ProgramData\Faronics\CustomFix ){
+Remove-Item 'C:\ProgramData\Faronics\CustomFix' -Recurse
+}
+md C:\ProgramData\Faronics\CustomFix
+Expand-Archive -LiteralPath C:\Windows\temp\WUCoreCacheSrvFix.zip -DestinationPath C:\ProgramData\Faronics\CustomFix
+Stop-Service -Name "FWUSvc" -Force
+ping localhost -n 10
+If (Test-Path -Path C:\ProgramData\Faronics\StorageSpace\SUC\Org_WuCore.dis ){
+Remove-Item 'C:\ProgramData\Faronics\StorageSpace\SUC\Org_WuCore.dis' -Recurse
+}
+Rename-Item C:\ProgramData\Faronics\StorageSpace\SUC\WUCore.dll Org_WuCore.dis
+Copy-Item "C:\ProgramData\Faronics\customFix\WUCore-64bit.dll" -Destination "C:\ProgramData\Faronics\StorageSpace\SUC\WUCore.dll"
+New-Item -Path HKLM:\SOFTWARE\Faronics
+New-Item -Path HKLM:\SOFTWARE\Faronics\CacheServerOverride
+Set-ItemProperty HKLM:\SOFTWARE\Faronics\CacheServerOverride -Name ServerIP -Value $cacheIP -Type String
+Set-ItemProperty HKLM:\SOFTWARE\Faronics\CacheServerOverride -Name PortNo -Value "7726" -Type Dword
+ping localhost -n 5
+Start-Service -Name "FWUSvc"
+ping localhost -n 10
+return
