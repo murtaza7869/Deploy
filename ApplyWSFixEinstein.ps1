@@ -9,7 +9,7 @@ Remove-Item 'C:\ProgramData\Faronics\CustomFix' -Recurse | out-null
 md C:\ProgramData\Faronics\CustomFix
 Expand-Archive -LiteralPath C:\Windows\temp\WUCoreCacheSrvFix.zip -DestinationPath C:\ProgramData\Faronics\CustomFix
 Stop-Service -Name "FWUSvc" -Force
-ping localhost -n 10
+ping localhost -n 15
 If (Test-Path -Path C:\ProgramData\Faronics\StorageSpace\SUC\Org_WuCore.dis ){
 Remove-Item 'C:\ProgramData\Faronics\StorageSpace\SUC\Org_WuCore.dis' -Recurse | out-null
 }
