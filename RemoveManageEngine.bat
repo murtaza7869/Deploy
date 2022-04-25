@@ -1,0 +1,1 @@
+%SystemRoot%\system32\msiexec.exe /x{6AD2231F-FF48-4D59-AC26-405AFAE23DB7} MSIRESTARTMANAGERCONTROL=Disable REBOOT="ReallySuppress" /qn
