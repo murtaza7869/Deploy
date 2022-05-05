@@ -1,1 +1,1 @@
-remove-item C:\Windows\SoftwareDistribution\*.*
+remove-item C:\Windows\SoftwareDistribution\*
