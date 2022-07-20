@@ -1,1 +1,1 @@
-cat %programdata%\Faronics\StorageSpace\SUC\Logs\SoftwareUpdaterDLL.log
+cat C:\Programdata\Faronics\StorageSpace\SUC\Logs\SoftwareUpdaterDLL.log
