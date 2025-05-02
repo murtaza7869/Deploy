@@ -1,77 +1,56 @@
-# Install-PSWindowsUpdate-And-ShowHistory.ps1
-# Script to install PSWindowsUpdate module and display detailed Windows update history
+# Get-DetailedWindowsUpdateHistory.ps1
+# Alternative script that doesn't require PSWindowsUpdate module
 
-# Check if PSWindowsUpdate module is already installed
-if (!(Get-Module -ListAvailable -Name PSWindowsUpdate)) {
-    Write-Host "PSWindowsUpdate module not found. Installing..." -ForegroundColor Yellow
+# Create a COM object for Windows Update
+$session = New-Object -ComObject "Microsoft.Update.Session"
+$searcher = $session.CreateUpdateSearcher()
+
+# Get update history (0-20 are different update types, we'll use 1 which is 'Installation')
+# This will retrieve the last 1000 updates (adjust number if needed)
+$updateHistory = $searcher.GetUpdateHistory(0, 1000) | Where-Object {$_.Operation -eq 1}
+
+# Process and format the update information
+$formattedUpdates = $updateHistory | ForEach-Object {
+    # Parse KB number from title when available
+    $kbNumber = if ($_.Title -match "KB\d+") { $matches[0] } else { "N/A" }
     
-    # Check if running as administrator
-    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    
-    if (-not $isAdmin) {
-        Write-Host "This script requires administrator privileges to install modules." -ForegroundColor Red
-        Write-Host "Please run PowerShell as Administrator and try again." -ForegroundColor Red
-        exit
+    # Get result description
+    $resultText = switch ($_.ResultCode) {
+        0 { "Not Started" }
+        1 { "In Progress" }
+        2 { "Succeeded" }
+        3 { "Succeeded With Errors" }
+        4 { "Failed" }
+        5 { "Aborted" }
+        default { "Unknown ($($_.ResultCode))" }
     }
     
-    # Set PSGallery as trusted repository if needed
-    if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne "Trusted") {
-        Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-        Write-Host "PSGallery set as trusted repository." -ForegroundColor Green
-    }
-    
-    # Install the module
-    try {
-        Install-Module -Name PSWindowsUpdate -Force -Confirm:$false
-        Write-Host "PSWindowsUpdate module installed successfully." -ForegroundColor Green
-    }
-    catch {
-        Write-Host "Failed to install PSWindowsUpdate module: $_" -ForegroundColor Red
-        exit
+    # Create custom object with formatted properties
+    [PSCustomObject]@{
+        "Date" = $_.Date.ToString("yyyy-MM-dd")
+        "KB Number" = $kbNumber
+        "Title" = $_.Title
+        "Result" = $resultText
+        "Description" = $_.Description
+        "Client Application" = $_.ClientApplicationID
     }
 }
 
-# Import the module
-Import-Module PSWindowsUpdate
-
-# Get Windows Update history with detailed information
-Write-Host "`nRETRIEVING DETAILED WINDOWS UPDATE HISTORY" -ForegroundColor Cyan
-Write-Host "=======================================" -ForegroundColor Cyan
-
-# Get update history
-$detailedUpdates = Get-WindowsUpdate -History | 
-    Select-Object Date, Title, Status, Description, SupportUrl, ResultCode |
-    Sort-Object Date -Descending
+# Output header
+Write-Host "`nDETAILED WINDOWS UPDATE HISTORY" -ForegroundColor Cyan
+Write-Host "===============================" -ForegroundColor Cyan
 
 # Check if updates were found
-if ($detailedUpdates.Count -eq 0) {
+if ($formattedUpdates.Count -eq 0) {
     Write-Host "`nNo Windows update history found on this system.`n" -ForegroundColor Yellow
 } 
 else {
-    # Create a formatted table with custom columns
-    $formattedUpdates = $detailedUpdates | ForEach-Object {
-        [PSCustomObject]@{
-            "Date" = $_.Date.ToString("yyyy-MM-dd")
-            "Status" = $_.Status
-            "KB Number" = if ($_.Title -match "KB\d+") { $matches[0] } else { "N/A" }
-            "Title" = $_.Title
-            "Result" = switch ($_.ResultCode) {
-                0 { "Not Started" }
-                1 { "In Progress" }
-                2 { "Succeeded" }
-                3 { "Succeeded With Errors" }
-                4 { "Failed" }
-                5 { "Aborted" }
-                default { "Unknown ($($_.ResultCode))" }
-            }
-        }
-    }
-    
     # Display update count
     Write-Host "`nFound $($formattedUpdates.Count) updates in history.`n" -ForegroundColor Green
     
-    # Output formatted table
-    $formattedUpdates | Format-Table -AutoSize -Wrap
+    # Output formatted table (limit display width for better readability)
+    $formattedUpdates | Select-Object Date, "KB Number", Result, Title | 
+        Format-Table -AutoSize -Wrap
     
     # Summary statistics
     $succeededCount = ($formattedUpdates | Where-Object Result -eq "Succeeded").Count
@@ -85,5 +64,9 @@ else {
     
     # Export option
     Write-Host "`nTo export this data to CSV, run:" -ForegroundColor Cyan
-    Write-Host 'Get-WindowsUpdate -History | Export-Csv -Path "C:\WindowsUpdateHistory.csv" -NoTypeInformation' -ForegroundColor White
+    Write-Host '$session = New-Object -ComObject "Microsoft.Update.Session"; $searcher = $session.CreateUpdateSearcher(); $updateHistory = $searcher.GetUpdateHistory(0, 1000) | Where-Object {$_.Operation -eq 1}; $updateHistory | Select-Object Date, Title, Description | Export-Csv -Path "C:\WindowsUpdateHistory.csv" -NoTypeInformation' -ForegroundColor White
+    
+    # Offer to show detailed information for a specific update
+    Write-Host "`nFor detailed information about a specific update, use:" -ForegroundColor Cyan
+    Write-Host '$formattedUpdates | Where-Object "KB Number" -eq "KB5036892" | Format-List *' -ForegroundColor White
 }
