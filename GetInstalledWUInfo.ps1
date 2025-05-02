@@ -1,72 +1,67 @@
-# Get-DetailedWindowsUpdateHistory.ps1
-# Alternative script that doesn't require PSWindowsUpdate module
+# Get-WindowsUpdateHistory-Simple.ps1
+# A reliable script to display Windows update information
 
-# Create a COM object for Windows Update
-$session = New-Object -ComObject "Microsoft.Update.Session"
-$searcher = $session.CreateUpdateSearcher()
+# Get all Windows updates using WMI
+Write-Host "Retrieving Windows updates..." -ForegroundColor Cyan
+$updates = Get-WmiObject -Class Win32_QuickFixEngineering | 
+    Select-Object @{Name="InstallDate";Expression={
+        # Convert date format if available
+        if ($_.InstalledOn) {
+            $_.InstalledOn
+        } else {
+            # Some updates store date differently
+            $date = $null
+            if ($_.InstallDate) {
+                try {
+                    $year = $_.InstallDate.Substring(0,4)
+                    $month = $_.InstallDate.Substring(4,2)
+                    $day = $_.InstallDate.Substring(6,2)
+                    $date = Get-Date -Year $year -Month $month -Day $day -ErrorAction SilentlyContinue
+                } catch {}
+            }
+            $date
+        }
+    }}, 
+    HotFixID, Description, InstalledBy |
+    Sort-Object InstallDate -Descending
 
-# Get update history (0-20 are different update types, we'll use 1 which is 'Installation')
-# This will retrieve the last 1000 updates (adjust number if needed)
-$updateHistory = $searcher.GetUpdateHistory(0, 1000) | Where-Object {$_.Operation -eq 1}
-
-# Process and format the update information
-$formattedUpdates = $updateHistory | ForEach-Object {
-    # Parse KB number from title when available
-    $kbNumber = if ($_.Title -match "KB\d+") { $matches[0] } else { "N/A" }
-    
-    # Get result description
-    $resultText = switch ($_.ResultCode) {
-        0 { "Not Started" }
-        1 { "In Progress" }
-        2 { "Succeeded" }
-        3 { "Succeeded With Errors" }
-        4 { "Failed" }
-        5 { "Aborted" }
-        default { "Unknown ($($_.ResultCode))" }
-    }
-    
-    # Create custom object with formatted properties
-    [PSCustomObject]@{
-        "Date" = $_.Date.ToString("yyyy-MM-dd")
-        "KB Number" = $kbNumber
-        "Title" = $_.Title
-        "Result" = $resultText
-        "Description" = $_.Description
-        "Client Application" = $_.ClientApplicationID
-    }
-}
-
-# Output header
-Write-Host "`nDETAILED WINDOWS UPDATE HISTORY" -ForegroundColor Cyan
-Write-Host "===============================" -ForegroundColor Cyan
+# Display header
+Write-Host "`nWINDOWS UPDATE HISTORY" -ForegroundColor Cyan
+Write-Host "======================" -ForegroundColor Cyan
 
 # Check if updates were found
-if ($formattedUpdates.Count -eq 0) {
-    Write-Host "`nNo Windows update history found on this system.`n" -ForegroundColor Yellow
+if (!$updates -or $updates.Count -eq 0) {
+    Write-Host "`nNo Windows updates were found using this method.`n" -ForegroundColor Yellow
+    
+    # Alternative approach
+    Write-Host "Trying alternative approach..." -ForegroundColor Yellow
+    $hotfixes = Get-HotFix | Sort-Object InstalledOn -Descending
+    
+    if ($hotfixes -and $hotfixes.Count -gt 0) {
+        Write-Host "Found $($hotfixes.Count) updates using Get-HotFix cmdlet.`n" -ForegroundColor Green
+        $hotfixes | Format-Table -Property HotFixID, Description, InstalledOn, InstalledBy -AutoSize
+    } else {
+        Write-Host "No updates found with alternative method either.`n" -ForegroundColor Red
+        Write-Host "This may be due to system configuration or permissions.`n"
+    }
 } 
 else {
     # Display update count
-    Write-Host "`nFound $($formattedUpdates.Count) updates in history.`n" -ForegroundColor Green
+    Write-Host "`nFound $($updates.Count) installed updates.`n" -ForegroundColor Green
     
-    # Output formatted table (limit display width for better readability)
-    $formattedUpdates | Select-Object Date, "KB Number", Result, Title | 
-        Format-Table -AutoSize -Wrap
-    
-    # Summary statistics
-    $succeededCount = ($formattedUpdates | Where-Object Result -eq "Succeeded").Count
-    $failedCount = ($formattedUpdates | Where-Object Result -eq "Failed").Count
-    
-    Write-Host "`nSUMMARY:" -ForegroundColor Cyan
-    Write-Host "Total Updates: $($formattedUpdates.Count)" -ForegroundColor White
-    Write-Host "Succeeded: $succeededCount" -ForegroundColor Green
-    Write-Host "Failed: $failedCount" -ForegroundColor $(if ($failedCount -gt 0) { "Red" } else { "Green" })
-    Write-Host "Most Recent Update: $($formattedUpdates[0].Date)" -ForegroundColor White
+    # Output formatted table
+    $updates | Format-Table -Property HotFixID, Description, InstallDate, InstalledBy -AutoSize
     
     # Export option
     Write-Host "`nTo export this data to CSV, run:" -ForegroundColor Cyan
-    Write-Host '$session = New-Object -ComObject "Microsoft.Update.Session"; $searcher = $session.CreateUpdateSearcher(); $updateHistory = $searcher.GetUpdateHistory(0, 1000) | Where-Object {$_.Operation -eq 1}; $updateHistory | Select-Object Date, Title, Description | Export-Csv -Path "C:\WindowsUpdateHistory.csv" -NoTypeInformation' -ForegroundColor White
+    Write-Host 'Get-WmiObject -Class Win32_QuickFixEngineering | Export-Csv -Path "C:\WindowsUpdateHistory.csv" -NoTypeInformation' -ForegroundColor White
     
-    # Offer to show detailed information for a specific update
-    Write-Host "`nFor detailed information about a specific update, use:" -ForegroundColor Cyan
-    Write-Host '$formattedUpdates | Where-Object "KB Number" -eq "KB5036892" | Format-List *' -ForegroundColor White
+    # Alternative method info
+    Write-Host "`nAlternative method to view updates:" -ForegroundColor Cyan
+    Write-Host 'Get-HotFix | Sort-Object InstalledOn -Descending | Format-Table' -ForegroundColor White
 }
+
+# Provide additional info about Windows Update log
+Write-Host "`nADDITIONAL INFORMATION:" -ForegroundColor Cyan
+Write-Host "Windows Update logs can be found at: C:\Windows\Logs\WindowsUpdate\" -ForegroundColor White
+Write-Host "You can also check update history in Settings > Windows Update > Update History" -ForegroundColor White
