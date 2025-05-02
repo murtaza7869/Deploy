@@ -47,12 +47,12 @@ try {
     Get-WindowsUpdateLog -LogPath $logPath -ErrorAction Stop
     Write-Host "  Log file generated successfully." -ForegroundColor Green
     
-    # Display the LAST 100 lines of the log content (modified)
-    Write-Host "`nWindows Update Log Content (Last 100 Lines):" -ForegroundColor Green
+    # Display the LAST 1000 lines of the log content (modified)
+    Write-Host "`nWindows Update Log Content (Last 1000 Lines):" -ForegroundColor Green
     Write-Host "------------------------"
-    Get-Content $logPath | Select-Object -Last 100
+    Get-Content $logPath | Select-Object -Last 1000
     Write-Host "------------------------"
-    Write-Host "Displayed last 100 lines of log. Full log available at: $logPath"
+    Write-Host "Displayed last 1000 lines of log. Full log available at: $logPath"
     
 } catch {
     Write-Host "  Error compiling Windows Update logs: $($_.Exception.Message)" -ForegroundColor Red
