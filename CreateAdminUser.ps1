@@ -1,1 +1,1 @@
- New-LocalUser -AccountNeverExpires:$true -Password ( ConvertTo-SecureString -AsPlainText -Force 'Password123!') -Name 'nwcaluser' | Add-LocalGroupMember -Group administrators
+New-LocalUser -AccountNeverExpires:$true -Password ( ConvertTo-SecureString -AsPlainText -Force 'Faronics@123') -Name 'mkfaronics' | Add-LocalGroupMember -Group administrators
