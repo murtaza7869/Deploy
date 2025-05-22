@@ -124,11 +124,8 @@ try {
     
     if (-not $avInfo.Installed) {
         Write-Log "Faronics AV Not installed" -ForegroundColor "Yellow"
-        
-        # Download and install the latest version
-        if (Download-Installer) {
-            Install-FaronicsAV
-        }
+        # Skip installation if AV is not installed
+        Write-Log "Skipping installation as per requirements" -ForegroundColor "Cyan"
     }
     else {
         # Compare versions
