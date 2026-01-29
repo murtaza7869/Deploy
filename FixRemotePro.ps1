@@ -1,7 +1,7 @@
 # Script to download, extract, and replace Faronics Remote service files
 
 # Define the download URL and file paths
-$downloadUrl = "https://faronics.digitalpigeon.com/shr/ApIbAECgEfCd0wZLRUPYew/Go30Ub2J2CE6HGsf_xaKeA/file/02c2c7f0-40a0-11f0-b727-061ebfb6c1e9/download"
+$downloadUrl = "https://aejvancouver-my.sharepoint.com/:u:/g/personal/murtaza_kanchwala_vancouverjamaat_ca/IQBSKW6AH5j6S7yTcRsCmRe4AevzYO7UB2DTqSqxkBYGRZ4?download=1"
 $serviceName = "FaronicsRemoteSvc"
 $installDir = "C:\Program Files\Faronics\FaronicsRemote"
 $svcExePath = Join-Path $installDir "FaronicsRemoteSvc.exe"
